@@ -1,0 +1,302 @@
+<html>
+    <head>
+    </head>
+    <body>
+        <canvas class="canvas" id="canvas"></canvas>
+    </body>
+    <script>
+
+        var c = null;
+        var can = null;
+        var w = null;
+        var h = null;
+        var cam = {};
+
+        cam.x = 0;
+        cam.y = 0;
+        cam.z = 0;
+        cam.zoom = 2;
+
+        tab = [
+            [100, 100, 100],
+            [-100, 100, 100],
+            [-100, -100, 100],
+            [100, -100, 100],
+
+            [100, 100, -100],
+            [-100, 100, -100],
+            [-100, -100, -100],
+            [100, -100, -100],
+        ];
+
+        var edge=[
+            [0, 1],
+            [0, 3],
+            [1, 2],
+            [3, 2],
+
+            [4, 5],
+            [4, 7],
+            [5, 6],
+            [7, 6],
+
+            [0, 4],
+            [1, 5],
+            [2, 6],
+            [3, 7]
+        ];
+        
+        var face = [
+            [0, 1, 2, 3]
+        ]
+        
+        for (var i = 0; i < tab.length;i++)
+        {
+            tab[i][0]+=00;
+            tab[i][1]+=00;
+            tab[i][2]+=00;
+            //showPoint3D(item[0], item[1], item[2]);
+        }
+        
+
+        cam.an = 0;
+
+
+        function main()
+        {
+            var can = document.getElementById("canvas");
+            c = can.getContext("2d");
+            w = window.innerWidth;
+            h = window.innerHeight;
+            can.width = w;
+            can.height = h;
+            setInterval(function()
+            {
+                loop();
+            }, 20);
+        }
+
+        function showPoint2D(x, y, sz)
+        {
+            c.fillStyle = "#FFF";
+            c.fillRect(x - (sz / 2), y - (sz / 2), sz, sz);
+            //console.log(x + " " + y);
+        }
+
+
+        function conv2DM2(x, y, z)
+        {
+            var p1 = [w / 2, h / 2];
+            p1[0] += Math.sin(30 / 180 * Math.PI) * x *cam.zoom;
+            p1[1] += Math.cos(30 / 180 * Math.PI) * y *cam.zoom - (z * cam.zoom);
+            //p1[1] += y;
+            return p1;
+            //return [w/2 + (Math.cos(30 / 180 * Math.PI) * x * cam.zoom), h/2 + (Math.cos(60 / 180 * Math.PI) * y * cam.zoom) + (z * cam.zoom)];
+        }
+
+        function conv2DM2(x, y, z)
+        {
+            var p1 = [w / 2, h / 2];
+
+            var px = p1[0];
+            px += Math.cos(30 / 180 * Math.PI) * x*cam.zoom;
+            px -= Math.sin(60 / 180 * Math.PI) * y*cam.zoom;
+            
+            var py = p1[1];
+            py += Math.cos(60 / 180 * Math.PI) * x*cam.zoom;
+            py += Math.sin(30 / 180 * Math.PI) * y*cam.zoom;
+            py -= z*cam.zoom;
+
+            //console.log([px, py]);
+            return [px, py];
+            p1[0] += Math.cos(30 / 180 * Math.PI) * x *cam.zoom;
+            p1[1] += Math.cos(60 / 180 * Math.PI) * y *cam.zoom - (z * cam.zoom);
+            //p1[1] += y;
+            return p1;
+            //return [w/2 + (Math.cos(30 / 180 * Math.PI) * x * cam.zoom), h/2 + (Math.cos(60 / 180 * Math.PI) * y * cam.zoom) + (z * cam.zoom)];
+        }
+
+        function showOrigin()
+        {
+            c.beginPath();
+            //axe Z;
+            var p1 = [w/2, h/2];
+            var p2 = [w/2, h/2 - 100];
+            line2D(p1, p2);
+            //axe X;
+            var p1 = [w/2, h/2];
+            var p2 = [w/2 + (Math.cos((30) / 180 * Math.PI) * 100), h/2  + (Math.cos((60) / 180 * Math.PI) * 100)];
+            line2D(p1, p2);
+            //axe Y;
+            var p1 = [w/2, h/2];
+            var p2 = [w/2 + -(Math.cos((30) / 180 * Math.PI) * 100), h/2  + (Math.cos((60) / 180 * Math.PI) * 100)];
+            line2D(p1, p2);
+            
+        }
+
+        function convertTo2D(x, y, z)
+        {
+            var x1 = Math.cos(cam.an / 180 * Math.PI) * x;
+            var y1 = Math.cos(cam.an - 30 / 180 * Math.PI) * y;
+            x = x1 + y1 + (w / 2);
+            y = Math.sin(cam.an / 180 / Math.PI) * -y + z + (h / 2);
+            return ([x, y]);
+        }
+        function line2D(p1, p2)
+        {
+            c.beginPath();
+            c.strokeStyle = "#0FF";
+            c.lineWidth = 3;
+            c.moveTo(p1[0], p1[1]);
+            c.lineTo(p2[0], p2[1]);
+            c.stroke();
+        }
+        function showPoint3D(x, y, z)
+        {
+            //x = x + (z / 2) + (w / 2);
+            //y = y + (w / 2) + (w / 2);
+            //y = z + (w / 2) - ((x / 2) + (y / 2));
+            //x = (-x /2) + (-y / 2) + (h / 2);
+            //console.log(x + "\n" + y + "\n");
+            var x1 = Math.cos(cam.an / 180 * Math.PI) * x;
+            var y1 = Math.sin(cam.an / 180 * Math.PI) * y;
+            x = x1 + y1 + (w / 2);
+            y = Math.sin(cam.an / 180 / Math.PI) * -y + z + (h / 2);
+            showPoint2D(x, y, 4);
+        } 
+
+        function clearScreen()
+        {
+            c.fillStyle = "#000";
+            c.fillRect(0, 0, w, h);
+        }
+
+        function turn(p, an)
+        {
+            var x = p[0];
+            var y = p[1];
+            var z = p[2];
+
+            var p2 = [x, y, z];
+            var a = Math.atan2(x, y) * 180 / Math.PI;
+            var d = Math.sqrt((x * x) + (y * y));
+            p2[0] = Math.cos((an + a) / 180 * Math.PI) * d;
+            p2[1] = Math.sin((an + a) / 180 * Math.PI) * d;
+            return p2;
+        }
+
+        function showFace(face)
+        {
+            c.fillStyle = "#F00";
+            c.beginPath();
+            for(var i = 0; i < face.length; i++)
+            {
+                var item = face[i];
+                if (i == 0)
+                {
+                    c.moveTo(item[0], item[1]);
+                }
+                else
+                {
+                    c.lineTo(item[0], item[1]);
+                }
+            }
+            c.closePath();
+            c.fill();
+            console.log(face);
+        }
+        function loop()
+        {
+            clearScreen();
+
+
+
+            for (var i = 0; i < face.length; i++)
+            {
+                var item = face[i];
+
+                var pts = [];
+
+                for (var n = 0; n < item.length; n++)
+                {
+                    var p1 = tab[item[n]];
+                    p1 = turn(p1, cam.an);
+                    p1 = conv2DM2(p1[0], p1[1], p1[2]);
+                    pts.push(p1);    
+                }
+                showFace(pts);
+            }
+            
+            for (var i = 0; i < edge.length; i++)
+            {
+                var item = edge[i];
+                var p1 = tab[item[0]];
+                var p2 = tab[item[1]];
+                p1 = turn(p1, cam.an);
+                p1 = conv2DM2(p1[0], p1[1], p1[2]);
+                p2 = turn(p2, cam.an);
+                p2 = conv2DM2(p2[0], p2[1], p2[2]);
+                line2D(p1, p2);
+            }
+            
+            for (var i = 0; i < tab.length;i++)
+            {
+                var item = tab[i];
+                var p1 = [item[0], item[1], item[2]];
+                p1 = turn(p1, cam.an)
+                //p1 = turn(p, cam.an);
+                //var p1 = conv2DM2(item[0], item[1], item[2]);
+                var p2 = conv2DM2(p1[0], p1[1], p1[2]);
+                showPoint2D(p2[0], p2[1], 16);
+                //showPoint3D(item[0], item[1], item[2]);
+            }
+
+
+            //showOrigin();
+            cam.an += 1;
+        }
+
+        function loadMap()
+        {
+            var x =new XMLHttpRequest();
+            x.open("GET", "map");
+            x.send();
+            x.onload = function(e)
+            {
+                var tmp = JSON.parse(e.target.response);
+                console.log(tmp);
+                var tmps = [];
+                for (var x = 0; x < tmp.length; x++)
+                {
+                    for (var y = 0; y < tmp[x].length; y++)
+                    {
+                        var item = [(x - 4) * 50, tmp[x][y] * 20, (y - 4) * 50];
+                        tmps.push(item);
+                    }
+                }
+                tab = tmps;
+            }
+        }
+        setTimeout(
+            function ()
+            {
+                //loadMap();
+                main();
+            }, 100
+        );
+    </script>
+    <style>
+        body
+        {
+            background-color: 333;
+        }
+        .canvas
+        {
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</html>
